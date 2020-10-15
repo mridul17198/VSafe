@@ -37,35 +37,34 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 /*This is for Adding Session Middleware*/
-app.use(session({
-  name: 'session-id',
-  secret: config.secretKey,
-  saveUninitialized: false,
-  resave: false,
-  store: new FileStore()
-}));
+// app.use(session({
+//   name: 'session-id',
+//   secret: config.secretKey,
+//   saveUninitialized: false,
+//   resave: false,
+//   store: new FileStore()
+// }));
 
 app.use(passport.initialize());
-app.use(passport.session());
+//app.use(passport.session());
 
+app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
-function auth(req, res, next) {
-  console.log(req.user);
-  if (!req.user) {
-    var err = new Error('You are not authenticated!');
-    err.status = 403;
-    next(err);
-  }
-  else {
-    next();
-  }
-}
+// function auth(req, res, next) {
+//   console.log(req.user);
+//   if (!req.user) {
+//     var err = new Error('You are not authenticated!');
+//     err.status = 403;
+//     next(err);
+//   }
+//   else {
+//     next();
+//   }
+// }
 
-app.use(auth)
-
-app.use(express.static(path.join(__dirname, 'public')));
+//app.use(auth)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
