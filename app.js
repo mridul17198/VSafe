@@ -8,6 +8,8 @@ var FileStore=require('session-file-store')(session);
 var passport = require('passport');
 var authenticate = require('./authenticate');
 const mongoose = require('mongoose');
+const cors = require('cors');
+
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -35,6 +37,8 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(cors())
+
 
 /*This is for Adding Session Middleware*/
 // app.use(session({
@@ -47,6 +51,7 @@ app.use(cookieParser());
 
 app.use(passport.initialize());
 //app.use(passport.session());
+
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);

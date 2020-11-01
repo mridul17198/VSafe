@@ -6,6 +6,11 @@ var User = require('../models/user');
 var authenticate = require('../authenticate');
 router.use(bodyParser.json());
 
+const config=require('../config');
+const { Client } = require('twilio/lib/twiml/VoiceResponse');
+
+const client=require('twilio')(config.accountSID,config.authToken);
+
 /* GET users listing. */
 router.get('/',authenticate.verifyUser,function(req, res, next) {
   User.find({},(err,user)=>{
@@ -22,51 +27,129 @@ router.get('/',authenticate.verifyUser,function(req, res, next) {
 /*This is for Registration*/
 
 router.post('/signup', (req, res, next) => {
-  User.register(new User({username: req.body.username}), 
+  User.register(new User({username: req.body.username,phonenumber:req.body.phonenumber}), 
     req.body.password, (err, user) => {
-    if(err) {
-      res.statusCode = 500;
-      res.setHeader('Content-Type', 'application/json');
-      res.json({err: err});
+    if(err) {      
+    passport.authenticate('local',{failureRedirect: '/users/registration_error'})(req, res, () => {
+      var token = authenticate.getToken({_id: req.user._id});
+          sendOpt(req.body.phonenumber,req.body.channel)
+          .then((data)=>{
+            res.statusCode=200;
+            res.setHeader('Content-type','application/json');
+            res.json({success:true,token:token,data:data,status:'Registration Successfull',sendStatus:'Code successfully Send'})
+          })
+          .catch((err)=>{
+            res.statusCode=500;
+            res.setHeader('Content-type','application/json');
+            res.json({err:err});
+          })
+        });
     }
     else {
-      passport.authenticate('local',{failureRedirect: '/users/error'})(req, res, () => {
+      passport.authenticate('local',{failureRedirect: '/user/registration_error'})(req, res, () => {
         var token = authenticate.getToken({_id: req.user._id});
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.json({success: true,token:token,status: 'Registration Successful!'});
+        sendOpt(req.body.phonenumber,req.body.channel)
+        .then((data)=>{
+          res.statusCode=200;
+          res.setHeader('Content-type','application/json');
+          res.json({success:true,token:token,data:data,status:'Registration Successfull',sendStatus:'Code successfully Send'})
+        })
+        .catch((err)=>{
+          res.statusCode=500;
+          res.setHeader('Content-type','application/json');
+          res.json({err:err});
+        })
       });
     }
   });
 });
 /* This is for logging */
-router.post('/login',passport.authenticate('local',{failureRedirect: '/users/error'}), (req, res) => {
+router.post('/login',passport.authenticate('local',{failureRedirect: '/users/login_error'}), (req, res) => {
   var token = authenticate.getToken({_id: req.user._id});
-  res.statusCode = 200;
-  res.setHeader('Content-Type', 'application/json');
-  res.json({success: true,token:token,status: 'You are successfully logged in!'});
-});
-
-/*If user logout then session will be destroyed*/
-
-router.get('/logout', (req, res) => {
-  if (req.session) {
-    req.session.destroy();
-    res.clearCookie('session-id');
-    res.redirect('/');
+  if(req.user.verify)
+  {
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/json');
+    res.json({success: true,token:token,status: 'You are successfully logged in!'});
   }
-  else {
-    var err = new Error('You are not logged in!');
-    err.status = 403;
-    next(err);
+  else{
+    res.statusCode = 500;
+    res.setHeader('Content-Type', 'application/json');
+    res.json({success:false,status:'You are not verified'});
   }
 });
 
+sendOpt=(phonenumber,channel)=>{
+  return client
+              .verify
+              .services(config.serviceID)
+              .verifications
+              .create({
+                to:`+${phonenumber}`,
+                channel:channel
+              })
+}
+
+/*This is for otp verification*/
+
+router.post('/optVerify',authenticate.verifyUser,(req,res)=>{
+  client
+       .verify
+       .services(config.serviceID)
+       .verificationChecks
+       .create({
+         to:`+${req.user.phonenumber}`,
+         code:req.body.code
+       })
+       .then((data)=>{
+        if(data.valid)
+        {
+          req.user.verify=true;
+          req.user.save().then(()=>{
+          res.statusCode=200;
+          res.setHeader('Content-Type','application/json');
+          res.json({success: true,data:data,status: 'Code successfully Verified!'})
+          },(err)=>{
+            res.statusCode=500
+            res.setHeader('Content-Type','application/json');
+            res.json(({err:err}))
+          })
+          .catch((err)=>{
+            res.statusCode=500
+            res.setHeader('Content-Type','application/json');
+            res.json(({err:err}))
+          })
+        }
+        else{
+          res.statusCode=500;
+          res.setHeader('Content-Type', 'application/json');
+          err={
+            success:"false",
+            message:"Opt is Wrong!! Please Try Again"
+          }
+          res.json({err:err});
+        }
+       })
+
+})
 // This is called when user is not authenticated
-router.get('/error',(req,res) =>{
-  res.statusCode = 401;
+router.get('/login_error',(req,res) =>{
+  res.statusCode=500;
   res.setHeader('Content-Type', 'application/json');
-  res.json({err:'You are not Authenticated'});
+  err={
+    success:"false",
+    message:"Login Not Successful!! Please Try Again"
+  }
+  res.json({err:err});
+})
+router.get('/registration_error',(req,res)=>{
+  res.statusCode=500
+  res.setHeader('Content-Type','application/json');
+  err={
+    success:"false",
+    message:"Registration Not Successful!! Please Try Again"
+  }
+  res.json({err:err});
 })
 
 module.exports = router;
