@@ -9,7 +9,7 @@ router.use(bodyParser.json());
 const config=require('../config');
 const { Client } = require('twilio/lib/twiml/VoiceResponse');
 
-const client=require('twilio')(process.env.ACCOUNT_SID || config.accountSID,process.env.AUTH_TOKEN || config.authToken);
+const client=require('twilio')(process.env.ACCOUNT_SID || config.accountSID , process.env.AUTH_TOKEN || config.authToken);
 
 /* GET users listing. */
 router.get('/',authenticate.verifyUser,function(req, res, next) {
@@ -86,7 +86,7 @@ router.post('/login',passport.authenticate('local',{failureRedirect: '/users/log
 sendOpt=(phonenumber,channel)=>{
   return client
               .verify
-              .services(config.serviceID)
+              .services(process.env.SERVICE_ID || config.serviceID)
               .verifications
               .create({
                 to:`+91${phonenumber}`,
@@ -99,7 +99,7 @@ sendOpt=(phonenumber,channel)=>{
 router.post('/optVerify',authenticate.verifyUser,(req,res)=>{
   client
        .verify
-       .services(config.serviceID)
+       .services(process.env.SERVICE_ID || config.serviceID)
        .verificationChecks
        .create({
          to:`+91${req.user.phonenumber}`,
