@@ -16,7 +16,7 @@ var usersRouter = require('./routes/users');
 
 
 var config = require('./config');
-const url = config.mongoUrl
+const url = process.env.MONGODB_URL || config.mongoUrl
 const connect = mongoose.connect(url, {
   useNewUrlParser: true,
   useUnifiedTopology: true,

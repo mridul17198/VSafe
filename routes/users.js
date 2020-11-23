@@ -9,7 +9,7 @@ router.use(bodyParser.json());
 const config=require('../config');
 const { Client } = require('twilio/lib/twiml/VoiceResponse');
 
-const client=require('twilio')(config.accountSID,config.authToken);
+const client=require('twilio')(process.env.ACCOUNT_SID || config.accountSID,process.env.AUTH_TOKEN || config.authToken);
 
 /* GET users listing. */
 router.get('/',authenticate.verifyUser,function(req, res, next) {
