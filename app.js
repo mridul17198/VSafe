@@ -38,8 +38,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(cors())
-
-
 /*This is for Adding Session Middleware*/
 // app.use(session({
 //   name: 'session-id',

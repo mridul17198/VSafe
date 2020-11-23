@@ -14,6 +14,21 @@ var User= new Schema({
     verify:{
         type:Boolean,
         default:false
+    },
+    emergencyContact1:{
+        type:String,
+        default:"",
+        unique:true
+    },
+    emergencyContact2:{
+        type:String,
+        default:"",
+        unique:true
+    },
+    emergencyContact3:{
+        type:String,
+        default:"",
+        unique:true
     }
 });
 User.plugin(passportLocalMongoose);

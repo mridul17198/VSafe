@@ -27,7 +27,7 @@ router.get('/',authenticate.verifyUser,function(req, res, next) {
 /*This is for Registration*/
 
 router.post('/signup', (req, res, next) => {
-  User.register(new User({username: req.body.username,phonenumber:req.body.phonenumber}), 
+  User.register(new User({username: req.body.username,phonenumber:req.body.phonenumber,emergencyContact1:req.body.emergencyContact1,emergencyContact2:req.body.emergencyContact2,emergencyContact3:req.body.emergencyContact3}), 
     req.body.password, (err, user) => {
     if(err) {      
     passport.authenticate('local',{failureRedirect: '/users/registration_error'})(req, res, () => {
@@ -75,7 +75,11 @@ router.post('/login',passport.authenticate('local',{failureRedirect: '/users/log
   else{
     res.statusCode = 500;
     res.setHeader('Content-Type', 'application/json');
-    res.json({success:false,status:'You are not verified'});
+    err={
+      success:"false",
+      message:"Please Verify the Otp"
+    }
+    res.json({err:err});
   }
 });
 
@@ -85,7 +89,7 @@ sendOpt=(phonenumber,channel)=>{
               .services(config.serviceID)
               .verifications
               .create({
-                to:`+${phonenumber}`,
+                to:`+91${phonenumber}`,
                 channel:channel
               })
 }
@@ -98,7 +102,7 @@ router.post('/optVerify',authenticate.verifyUser,(req,res)=>{
        .services(config.serviceID)
        .verificationChecks
        .create({
-         to:`+${req.user.phonenumber}`,
+         to:`+91${req.user.phonenumber}`,
          code:req.body.code
        })
        .then((data)=>{
@@ -133,6 +137,7 @@ router.post('/optVerify',authenticate.verifyUser,(req,res)=>{
 
 })
 // This is called when user is not authenticated
+
 router.get('/login_error',(req,res) =>{
   res.statusCode=500;
   res.setHeader('Content-Type', 'application/json');
@@ -142,6 +147,9 @@ router.get('/login_error',(req,res) =>{
   }
   res.json({err:err});
 })
+
+//This is called when there is Error while Registration Process
+
 router.get('/registration_error',(req,res)=>{
   res.statusCode=500
   res.setHeader('Content-Type','application/json');
