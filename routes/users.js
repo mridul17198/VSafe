@@ -143,7 +143,7 @@ router.get('/login_error',(req,res) =>{
   res.setHeader('Content-Type', 'application/json');
   err={
     success:"false",
-    message:"Login Not Successful!! Please Try Again"
+    message:"Login Not Successful!! Username or password is not correct"
   }
   res.json({err:err});
 })
@@ -155,7 +155,7 @@ router.get('/registration_error',(req,res)=>{
   res.setHeader('Content-Type','application/json');
   err={
     success:"false",
-    message:"Registration Not Successful!! Please Try Again"
+    message:"Registration Not Successful!! Please Try Again With different Username or Mobile Number"
   }
   res.json({err:err});
 })
