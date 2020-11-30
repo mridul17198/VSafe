@@ -23,7 +23,14 @@ router.get('/',authenticate.verifyUser,function(req, res, next) {
     else{
       res.statusCode=200;
       res.setHeader('Content-type','application/json');
-      res.json({success:true,users:user,status:'List Of User Fetched'})
+      data={
+        username:user.username,
+        phonenumber:user.phonenumber,
+        emergencyContact1:user.emergencyContact1,
+        emergencyContact2:user.emergencyContact2,
+        emergencyContact3:user.emergencyContact3
+      }
+      res.json({success:true,data:data,status:'List Of User Fetched'})
     }
   })
 });
@@ -65,9 +72,16 @@ router.post('/login',passport.authenticate('local',{failureRedirect: '/users/log
   var token = authenticate.getToken({_id: req.user._id});
   if(req.user.verify)
   {
+    data={
+      username:req.user.username,
+      phonenumber:req.user.phonenumber,
+      emergencyContact1:req.user.emergencyContact1,
+      emergencyContact2:req.user.emergencyContact2,
+      emergencyContact3:req.user.emergencyContact3
+    }
     res.statusCode = 200;
     res.setHeader('Content-Type', 'application/json');
-    res.json({success: true,token:token,status: 'You are successfully logged in!'});
+    res.json({success: true,data:data,token:token,status: 'You are successfully logged in!'});
   }
   else{
     res.statusCode = 500;
