@@ -30,20 +30,7 @@ router.post('/signup', (req, res, next) => {
   User.register(new User({username: req.body.username,phonenumber:req.body.phonenumber,emergencyContact1:req.body.emergencyContact1,emergencyContact2:req.body.emergencyContact2,emergencyContact3:req.body.emergencyContact3}), 
     req.body.password, (err, user) => {
     if(err) {      
-    passport.authenticate('local',{failureRedirect: '/users/registration_error'})(req, res, () => {
-      var token = authenticate.getToken({_id: req.user._id});
-          sendOpt(req.body.phonenumber,req.body.channel)
-          .then((data)=>{
-            res.statusCode=200;
-            res.setHeader('Content-type','application/json');
-            res.json({success:true,token:token,data:data,status:'Registration Successfull',sendStatus:'Code successfully Send'})
-          })
-          .catch((err)=>{
-            res.statusCode=500;
-            res.setHeader('Content-type','application/json');
-            res.json({err:err});
-          })
-        });
+      res.json({err:err});
     }
     else {
       passport.authenticate('local',{failureRedirect: '/user/registration_error'})(req, res, () => {
