@@ -16,10 +16,14 @@ router.get('/',authenticate.verifyUser,function(req, res, next) {
   User.find({},(err,user)=>{
     if(err)
     {
-      next(err);
+      res.statusCode=500;
+      res.setHeader('Content-type','application/json');
+      res.json({err:err});
     }
     else{
-      res.send(user);
+      res.statusCode=200;
+      res.setHeader('Content-type','application/json');
+      res.json({success:true,users:user,status:'List Of User Fetched'})
     }
   })
 });
@@ -69,6 +73,23 @@ router.post('/login',passport.authenticate('local',{failureRedirect: '/users/log
     res.json({err:err});
   }
 });
+router.post('/sendOTP',(req,res)=>{
+  sendOpt(req.body.mobile_number,req.body.channel)
+         .then((data)=>{
+          res.statusCode=200;
+          res.setHeader('Content-type','application/json');
+          res.json({success:true,data:data,status:'Code successfully Send'})
+         },(err)=>{
+          res.statusCode=500;
+          res.setHeader('Content-type','application/json');
+          res.json({err:err});
+         })
+         .catch((err)=>{
+          res.statusCode=500;
+          res.setHeader('Content-type','application/json');
+          res.json({err:err});
+         })
+})
 
 sendOpt=(phonenumber,channel)=>{
   return client
@@ -83,32 +104,31 @@ sendOpt=(phonenumber,channel)=>{
 
 /*This is for otp verification*/
 
-router.post('/optVerify',authenticate.verifyUser,(req,res)=>{
+router.post('/optVerify',(req,res)=>{
   client
        .verify
        .services(process.env.SERVICE_ID || config.serviceID)
        .verificationChecks
        .create({
-         to:`+91${req.user.phonenumber}`,
+         to:`+91${req.body.phone_number}`,
          code:req.body.code
        })
        .then((data)=>{
         if(data.valid)
         {
-          req.user.verify=true;
-          req.user.save().then(()=>{
-          res.statusCode=200;
-          res.setHeader('Content-Type','application/json');
-          res.json({success: true,data:data,status: 'Code successfully Verified!'})
-          },(err)=>{
-            res.statusCode=500
-            res.setHeader('Content-Type','application/json');
-            res.json(({err:err}))
-          })
-          .catch((err)=>{
-            res.statusCode=500
-            res.setHeader('Content-Type','application/json');
-            res.json(({err:err}))
+          User.update({phonenumber:req.body.phone_number},{verify:"true"},(err,user)=>{
+            if(err)
+            {
+              res.statusCode=500
+              res.setHeader('Content-Type','application/json');
+              res.json(({err:err}))
+            }
+            else
+            {
+              res.statusCode=200;
+              res.setHeader('Content-Type','application/json');
+              res.json({success: true,data:user,status: 'Code successfully Verified!'})
+            }
           })
         }
         else{
