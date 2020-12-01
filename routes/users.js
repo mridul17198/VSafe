@@ -95,7 +95,7 @@ router.post('/login',passport.authenticate('local',{failureRedirect: '/users/log
 });
 
 router.post('/updateContact',authenticate.verifyUser,(req,res,next)=>{
-  User.update({username:req.body.username},{emergencyContact1:req.body.EmergencyContact1,emergencyContact2:req.body.EmergencyContact2,
+  User.update({username:req.body.Username},{emergencyContact1:req.body.EmergencyContact1,emergencyContact2:req.body.EmergencyContact2,
   emergencyContact3:req.body.EmergencyContact3},(err,user)=>{
     if(err)
     {
