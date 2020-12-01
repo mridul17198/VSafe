@@ -115,7 +115,7 @@ router.post('/resetPassword',(req,res,next)=>{
   User.findOne({phonenumber:req.body.phonenumber},(err,user)=>{
     if(user)
     {
-      user.changePassword(req.body.oldPassword,req.body.newPassword,(err,user)=>{
+      user.setPassword(req.body.Password,(err,user)=>{
         if(err)
         {
           res.statusCode = 500;
