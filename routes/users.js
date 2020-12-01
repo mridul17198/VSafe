@@ -127,16 +127,37 @@ router.post('/resetPassword',(req,res,next)=>{
           res.json({err:err});
         }
         else{
-          data={
-            username:user.username,
-            phonenumber:user.phonenumber,
-            emergencyContact1:user.emergencyContact1,
-            emergencyContact2:user.emergencyContact2,
-            emergencyContact3:user.emergencyContact3
-          }
-          res.statusCode = 200;
-          res.setHeader('Content-Type', 'application/json');
-          res.json({success: true,data:data,status: 'Password Successfully Changed'});
+          user.save()
+          .then((user)=>{
+            console.log(user);
+            data={
+              username:user.username,
+              phonenumber:user.phonenumber,
+              emergencyContact1:user.emergencyContact1,
+              emergencyContact2:user.emergencyContact2,
+              emergencyContact3:user.emergencyContact3
+            }
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/json');
+            res.json({success: true,data:data,status: 'Password Successfully Changed'});
+          },(err)=>{
+            res.statusCode = 500;
+            res.setHeader('Content-Type', 'application/json');
+            err={
+              success:"false",
+              message:"Password Not Changed Successfully"
+            }
+            res.json({err:err});
+          })
+          .catch((err)=>{
+            res.statusCode = 500;
+            res.setHeader('Content-Type', 'application/json');
+            err={
+              success:"false",
+              message:"Password Not Changed Successfully"
+            }
+            res.json({err:err});
+          })
         }
       })
     }
