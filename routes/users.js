@@ -93,6 +93,24 @@ router.post('/login',passport.authenticate('local',{failureRedirect: '/users/log
     res.json({err:err});
   }
 });
+
+router.post('/updateContact',authenticate.verifyUser,(req,res,next)=>{
+  User.update({username:req.body.username},{emergencyContact1:req.body.emergencyContact1,emergencyContact2:req.body.emergencyContact2,
+  emergencyContact3:req.body.emergencyContact3},(err,user)=>{
+    if(err)
+    {
+      res.statusCode=500
+      res.setHeader('Content-Type','application/json');
+      res.json(({err:err}))
+    }
+    else{
+      res.statusCode=200;
+      res.setHeader('Content-Type','application/json');
+      res.json({success: true,data:user,status:'Contact successfully Updated!'})
+    }
+  })
+})
+
 router.post('/resetPassword',(req,res,next)=>{
   User.findOne({phonenumber:req.body.phonenumber},(err,user)=>{
     if(user)
